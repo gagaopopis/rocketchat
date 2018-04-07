@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+ nginx-proxy:
+  image: jwilder/nginx-proxy
+  ports:
+     - "80:80"
+     - "443:443"
+  volumes:
+     - /var/run/docker.sock:/tmp/docker.sock:ro
+     - /home/pasha/workspace/docker/rocketchat/certs:/etc/nginx/certs
+ db:
+  image: mongo
+  volumes:
+    - ./data/runtime/db:/data/db
+    - ./data/dump:/dump
+  command: mongod --smallfiles
+
+ rocketchat:
+  image: rocketchat/rocket.chat:latest
+  environment:
+    - MONGO_URL=mongodb://db:27017/rocketchat
+    - ROOT_URL=https://chat.inumio.com
+    - Accounts_UseDNSDomainCheck=True
+    - VIRTUAL_HOST=chat.inumio.com
+  links:
+    - db:db
+  ports:
+    - 3000:3000
